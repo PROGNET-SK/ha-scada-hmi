@@ -15,6 +15,7 @@ class ProScadaHmiCard extends HTMLElement {
 
   static getStubConfig() {
     return {
+      type: "custom:pro-scada-hmi",
       entity_1: "",
       entity_2: "",
       entity_3: "",
@@ -71,11 +72,11 @@ class ProScadaHmiCard extends HTMLElement {
     const e5 = this.config.entity_5 ? this._hass.states[this.config.entity_5] : null;
 
     // Extrahovanie hodnôt a jednotiek
-    const s1 = e1 ? e1.state : "N/A";
-    const s2 = e2 ? e2.state : "N/A";
-    const s3 = e3 ? `${e3.state} ${e3.attributes.unit_of_measurement || ''}`.trim() : "N/A";
-    const s4 = e4 ? `${e4.state} ${e4.attributes.unit_of_measurement || ''}`.trim() : "N/A";
-    const s5 = e5 ? `${e5.state} ${e5.attributes.unit_of_measurement || ''}`.trim() : "N/A";
+    const s1 = e1 ? e1.state : "0";
+    const s2 = e2 ? e2.state : "0";
+    const s3 = e3 ? `${e3.state} ${e3.attributes.unit_of_measurement || ''}`.trim() : "0";
+    const s4 = e4 ? `${e4.state} ${e4.attributes.unit_of_measurement || ''}`.trim() : "0";
+    const s5 = e5 ? `${e5.state} ${e5.attributes.unit_of_measurement || ''}`.trim() : "0";
 
     const isE1On = s1 === "on" || (parseFloat(s1) > 0);
     const isE2On = s2 === "on" || (parseFloat(s2) > 0);
@@ -173,7 +174,7 @@ class ProScadaHmiCardEditor extends HTMLElement {
     const picker = this.querySelector('#' + pickerId);
     if (!picker) return;
     picker.hass = this._hass;
-    picker.value = this._config[configKey] || '';
+    picker.value = (this._config && this._config[configKey]) || '';
     picker.addEventListener('value-changed', (ev) => this._valueChanged(ev, configKey));
   }
 
