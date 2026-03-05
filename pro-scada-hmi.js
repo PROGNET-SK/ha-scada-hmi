@@ -27,7 +27,13 @@ class ProScadaHmiCard extends HTMLElement {
     if (!config) {
       throw new Error("Neplatná konfigurácia");
     }
-    this.config = config;
+    this.config = { ...{
+      entity_1: "",
+      entity_2: "",
+      entity_3: "",
+      entity_4: "",
+      entity_5: "",
+    }, ...config };
   }
 
   set hass(hass) {
@@ -55,6 +61,8 @@ class ProScadaHmiCard extends HTMLElement {
   }
 
   renderSVG() {
+    if (!this.config || !this._hass) return;
+
     // Načítanie stavov entít; ak nie sú konfigurované alebo dostupné, default je null
     const e1 = this.config.entity_1 ? this._hass.states[this.config.entity_1] : null;
     const e2 = this.config.entity_2 ? this._hass.states[this.config.entity_2] : null;
