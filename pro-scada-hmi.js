@@ -140,11 +140,11 @@ class ProScadaHmiCardEditor extends HTMLElement {
     if (!this._hass) return;
     this._initialized = true;
 
-    // Všetky entity z HA zapísané do natívneho <select> elementu
+    // Všetky entity z HA pripravené do HTML datalist pre fulltext vyhľadávanie
     const entities = Object.keys(this._hass.states).sort();
-    let options = `<option value="">-- Nevybraná entita (Zobrazí 0) --</option>`;
+    let datalistOptions = '';
     entities.forEach(entity => {
-      options += `<option value="${entity}">${entity}</option>`;
+      datalistOptions += `<option value="${entity}"></option>`;
     });
 
     this.innerHTML = `
@@ -177,7 +177,7 @@ class ProScadaHmiCardEditor extends HTMLElement {
         .scada-block-content.active {
           display: block;
         }
-        .scada-select {
+        .scada-input {
           width: 100%;
           padding: 10px;
           margin-top: 8px;
@@ -186,13 +186,19 @@ class ProScadaHmiCardEditor extends HTMLElement {
           background-color: var(--card-background-color, #fff);
           color: var(--primary-text-color, #212121);
           font-size: 14px;
+          box-sizing: border-box;
         }
-        .scada-select:focus {
+        .scada-input:focus {
           outline: none;
           border-color: var(--primary-color, #03a9f4);
         }
       </style>
       <div class="card-config">
+        <!-- Zdieľaný zoznam entít pre fulltext -->
+        <datalist id="ha-entities-list">
+          ${datalistOptions}
+        </datalist>
+
         <!-- Blok 1 -->
         <div class="scada-block">
           <div class="scada-block-header" onclick="this.nextElementSibling.classList.toggle('active')">
@@ -200,7 +206,7 @@ class ProScadaHmiCardEditor extends HTMLElement {
           </div>
           <div class="scada-block-content">
             <label>Priradiť Entity ID do bloku Čerpadiel:</label>
-            <select id="select1" class="scada-select">${options}</select>
+            <input type="text" id="input1" list="ha-entities-list" class="scada-input" placeholder="Zadajte alebo vyhľadajte entitu..." autocomplete="off" />
           </div>
         </div>
 
@@ -211,7 +217,7 @@ class ProScadaHmiCardEditor extends HTMLElement {
           </div>
           <div class="scada-block-content">
             <label>Priradiť Entity ID do bloku Mix Ventily:</label>
-            <select id="select2" class="scada-select">${options}</select>
+            <input type="text" id="input2" list="ha-entities-list" class="scada-input" placeholder="Zadajte alebo vyhľadajte entitu..." autocomplete="off" />
           </div>
         </div>
 
@@ -222,7 +228,7 @@ class ProScadaHmiCardEditor extends HTMLElement {
           </div>
           <div class="scada-block-content">
             <label>Priradiť Entity ID do bloku Teplôt:</label>
-            <select id="select3" class="scada-select">${options}</select>
+            <input type="text" id="input3" list="ha-entities-list" class="scada-input" placeholder="Zadajte alebo vyhľadajte entitu..." autocomplete="off" />
           </div>
         </div>
 
@@ -233,7 +239,7 @@ class ProScadaHmiCardEditor extends HTMLElement {
           </div>
           <div class="scada-block-content">
             <label>Priradiť Entity ID do bloku Teplôt vratných:</label>
-            <select id="select4" class="scada-select">${options}</select>
+            <input type="text" id="input4" list="ha-entities-list" class="scada-input" placeholder="Zadajte alebo vyhľadajte entitu..." autocomplete="off" />
           </div>
         </div>
 
@@ -244,28 +250,29 @@ class ProScadaHmiCardEditor extends HTMLElement {
           </div>
           <div class="scada-block-content">
             <label>Priradiť Entity ID pre spodnú hodnotu:</label>
-            <select id="select5" class="scada-select">${options}</select>
+            <input type="text" id="input5" list="ha-entities-list" class="scada-input" placeholder="Zadajte alebo vyhľadajte entitu..." autocomplete="off" />
           </div>
         </div>
       </div>
     `;
 
-    this._setupSelect('select1', 'entity_1');
-    this._setupSelect('select2', 'entity_2');
-    this._setupSelect('select3', 'entity_3');
-    this._setupSelect('select4', 'entity_4');
-    this._setupSelect('select5', 'entity_5');
+    this._setupInput('input1', 'entity_1');
+    this._setupInput('input2', 'entity_2');
+    this._setupInput('input3', 'entity_3');
+    this._setupInput('input4', 'entity_4');
+    this._setupInput('input5', 'entity_5');
   }
 
-  _setupSelect(selectId, configKey) {
-    const selectEl = this.querySelector('#' + selectId);
-    if (!selectEl) return;
+  _setupInput(inputId, configKey) {
+    const inputEl = this.querySelector('#' + inputId);
+    if (!inputEl) return;
     
     // Prednastavená hodnota
-    selectEl.value = (this._config && this._config[configKey]) || '';
+    inputEl.value = (this._config && this._config[configKey]) || '';
     
     // Udalosť pri zmene
-    selectEl.addEventListener('change', (ev) => this._valueChanged(ev, configKey));
+    inputEl.addEventListener('input', (ev) => this._valueChanged(ev, configKey));
+    inputEl.addEventListener('change', (ev) => this._valueChanged(ev, configKey));
   }
 
   _valueChanged(ev, key) {
