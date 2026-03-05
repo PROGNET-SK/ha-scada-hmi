@@ -133,9 +133,6 @@ class ProScadaHmiCardEditor extends HTMLElement {
     this._hass = hass;
     if (!this._initialized) {
       this.init();
-    } else {
-      // Keď sa aktualizuje hass v editore, mali by sme ho predať pickerom
-      this.updatePickers();
     }
   }
 
@@ -143,59 +140,142 @@ class ProScadaHmiCardEditor extends HTMLElement {
     if (!this._hass) return;
     this._initialized = true;
 
+    // Všetky entity z HA zapísané do natívneho <select> elementu
+    const entities = Object.keys(this._hass.states).sort();
+    let options = `<option value="">-- Nevybraná entita (Zobrazí 0) --</option>`;
+    entities.forEach(entity => {
+      options += `<option value="${entity}">${entity}</option>`;
+    });
+
     this.innerHTML = `
+      <style>
+        .scada-block {
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 6px;
+          margin-bottom: 12px;
+          overflow: hidden;
+          background: var(--card-background-color, #fff);
+        }
+        .scada-block-header {
+          background: var(--secondary-background-color, #f5f5f5);
+          padding: 12px 16px;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          color: var(--primary-text-color, #212121);
+          user-select: none;
+        }
+        .scada-block-header:hover {
+          background: var(--divider-color, #e0e0e0);
+        }
+        .scada-block-content {
+          padding: 16px;
+          display: none;
+        }
+        .scada-block-content.active {
+          display: block;
+        }
+        .scada-select {
+          width: 100%;
+          padding: 10px;
+          margin-top: 8px;
+          border-radius: 4px;
+          border: 1px solid var(--divider-color, #ccc);
+          background-color: var(--card-background-color, #fff);
+          color: var(--primary-text-color, #212121);
+          font-size: 14px;
+        }
+        .scada-select:focus {
+          outline: none;
+          border-color: var(--primary-color, #03a9f4);
+        }
+      </style>
       <div class="card-config">
-        <div class="option" style="margin-bottom: 12px;">
-          <ha-entity-picker id="picker1" label="Entity 1 (Čerpadlá)" allow-custom-entity></ha-entity-picker>
+        <!-- Blok 1 -->
+        <div class="scada-block">
+          <div class="scada-block-header" onclick="this.nextElementSibling.classList.toggle('active')">
+            1. Čerpadlá <span style="font-size: 12px;">▼</span>
+          </div>
+          <div class="scada-block-content">
+            <label>Priradiť Entity ID do bloku Čerpadiel:</label>
+            <select id="select1" class="scada-select">${options}</select>
+          </div>
         </div>
-        <div class="option" style="margin-bottom: 12px;">
-          <ha-entity-picker id="picker2" label="Entity 2 (Mix Ventily)" allow-custom-entity></ha-entity-picker>
+
+        <!-- Blok 2 -->
+        <div class="scada-block">
+          <div class="scada-block-header" onclick="this.nextElementSibling.classList.toggle('active')">
+            2. Mix Ventily <span style="font-size: 12px;">▼</span>
+          </div>
+          <div class="scada-block-content">
+            <label>Priradiť Entity ID do bloku Mix Ventily:</label>
+            <select id="select2" class="scada-select">${options}</select>
+          </div>
         </div>
-        <div class="option" style="margin-bottom: 12px;">
-          <ha-entity-picker id="picker3" label="Entity 3 (Teploty)" allow-custom-entity></ha-entity-picker>
+
+        <!-- Blok 3 -->
+        <div class="scada-block">
+          <div class="scada-block-header" onclick="this.nextElementSibling.classList.toggle('active')">
+            3. Teploty <span style="font-size: 12px;">▼</span>
+          </div>
+          <div class="scada-block-content">
+            <label>Priradiť Entity ID do bloku Teplôt:</label>
+            <select id="select3" class="scada-select">${options}</select>
+          </div>
         </div>
-        <div class="option" style="margin-bottom: 12px;">
-          <ha-entity-picker id="picker4" label="Entity 4 (Teploty vratné)" allow-custom-entity></ha-entity-picker>
+
+        <!-- Blok 4 -->
+        <div class="scada-block">
+          <div class="scada-block-header" onclick="this.nextElementSibling.classList.toggle('active')">
+            4. Teploty vratné <span style="font-size: 12px;">▼</span>
+          </div>
+          <div class="scada-block-content">
+            <label>Priradiť Entity ID do bloku Teplôt vratných:</label>
+            <select id="select4" class="scada-select">${options}</select>
+          </div>
         </div>
-        <div class="option" style="margin-bottom: 12px;">
-          <ha-entity-picker id="picker5" label="Entity 5 (Extra senzor/Doplňujúca hodnota)" allow-custom-entity></ha-entity-picker>
+
+        <!-- Blok 5 (Extra) -->
+        <div class="scada-block">
+          <div class="scada-block-header" onclick="this.nextElementSibling.classList.toggle('active')">
+            5. Spodný senzor (Extra) <span style="font-size: 12px;">▼</span>
+          </div>
+          <div class="scada-block-content">
+            <label>Priradiť Entity ID pre spodnú hodnotu:</label>
+            <select id="select5" class="scada-select">${options}</select>
+          </div>
         </div>
       </div>
     `;
 
-    this._setupPicker('picker1', 'entity_1');
-    this._setupPicker('picker2', 'entity_2');
-    this._setupPicker('picker3', 'entity_3');
-    this._setupPicker('picker4', 'entity_4');
-    this._setupPicker('picker5', 'entity_5');
+    this._setupSelect('select1', 'entity_1');
+    this._setupSelect('select2', 'entity_2');
+    this._setupSelect('select3', 'entity_3');
+    this._setupSelect('select4', 'entity_4');
+    this._setupSelect('select5', 'entity_5');
   }
 
-  _setupPicker(pickerId, configKey) {
-    const picker = this.querySelector('#' + pickerId);
-    if (!picker) return;
-    picker.hass = this._hass;
-    picker.value = (this._config && this._config[configKey]) || '';
-    picker.addEventListener('value-changed', (ev) => this._valueChanged(ev, configKey));
-  }
-
-  updatePickers() {
-    const keys = ['entity_1', 'entity_2', 'entity_3', 'entity_4', 'entity_5'];
-    keys.forEach((key, index) => {
-      const picker = this.querySelector('#picker' + (index + 1));
-      if (picker) {
-        picker.hass = this._hass;
-      }
-    });
+  _setupSelect(selectId, configKey) {
+    const selectEl = this.querySelector('#' + selectId);
+    if (!selectEl) return;
+    
+    // Prednastavená hodnota
+    selectEl.value = (this._config && this._config[configKey]) || '';
+    
+    // Udalosť pri zmene
+    selectEl.addEventListener('change', (ev) => this._valueChanged(ev, configKey));
   }
 
   _valueChanged(ev, key) {
-    if (!this._config || !this._hass) return;
+    if (!this._config) return;
 
-    if (this._config[key] === ev.detail.value) return;
+    if (this._config[key] === ev.target.value) return;
 
     this._config = {
       ...this._config,
-      [key]: ev.detail.value
+      [key]: ev.target.value
     };
 
     const event = new CustomEvent("config-changed", {
